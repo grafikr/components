@@ -1,4 +1,4 @@
-import { Emitter, EventType } from 'mitt';
+import type { Emitter, EventType } from 'mitt';
 import type App from './app';
 
 export type ComponentCallbackArgs = [
