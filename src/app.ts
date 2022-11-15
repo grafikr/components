@@ -65,18 +65,6 @@ class App {
     });
   }
 
-  private mountComponent(element: HTMLElement, component: Loader): void {
-    this.registeredComponents.set(element, true);
-
-    if (!Array.isArray(component)) {
-      this.mountSyncComponent(element, component);
-
-      return;
-    }
-
-    this.mountAsyncComponent(element, component);
-  }
-
   add(components: LoaderRecord): void {
     Object.assign(this.components, components);
   }
@@ -85,14 +73,23 @@ class App {
     const elements = document.querySelectorAll<HTMLElement>('[data-component]');
 
     elements.forEach(async (element) => {
+      const key = <string>element.dataset.component;
+
+      if (!Object.prototype.hasOwnProperty.call(this.components, key)) {
+        return;
+      }
+
       if (this.registeredComponents.has(element)) {
         return;
       }
 
-      const key = <string>element.dataset.component;
+      this.registeredComponents.set(element, true);
+      const component = this.components[key];
 
-      if (Object.prototype.hasOwnProperty.call(this.components, key)) {
-        this.mountComponent(element, this.components[key]);
+      if (Array.isArray(component)) {
+        this.mountAsyncComponent(element, component);
+      } else {
+        this.mountSyncComponent(element, component);
       }
     });
   }
