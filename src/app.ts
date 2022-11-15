@@ -7,6 +7,8 @@ type AsyncLoader = [LoaderType | LoaderType[], () => Promise<{ default: Componen
 type Loader = SyncLoader | AsyncLoader;
 type LoaderRecord = Record<string, Loader>;
 
+const SPACE_COMMA_REGEX = /[ ,]+/;
+
 class App {
   private readonly components: LoaderRecord;
 
@@ -34,7 +36,7 @@ class App {
     const callback = component[1];
 
     if (!Array.isArray(events)) {
-      events = typeof events === 'string' ? events.split(/[ ,]+/) : [events];
+      events = typeof events === 'string' ? events.split(SPACE_COMMA_REGEX) : [events];
     }
 
     const loadComponent = async () => {
