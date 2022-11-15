@@ -64,7 +64,7 @@ class App {
       }
     });
   }
-
+  
   add(components: LoaderRecord): void {
     Object.assign(this.components, components);
   }
