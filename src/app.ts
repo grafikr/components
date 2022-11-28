@@ -83,6 +83,7 @@ class App {
     elements.forEach(async (element) => {
       const key = <string>element.dataset.component;
 
+      // TODO: Refactor to map
       if (!Object.prototype.hasOwnProperty.call(this.components, key)) {
         return;
       }
