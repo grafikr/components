@@ -1,11 +1,10 @@
 import mitt, { Emitter, EventType } from 'mitt';
 import type { ComponentArgs, ComponentType } from './component';
 
-type LoaderType = string | CallableFunction;
-type SyncLoader = ComponentType;
-type AsyncLoader = [LoaderType | LoaderType[], () => Promise<{ default: ComponentType }>];
-type Loader = SyncLoader | AsyncLoader;
-type LoaderRecord = Record<string, Loader>;
+type LoaderEventType = string | CallableFunction;
+type SyncLoaderType = ComponentType;
+type AsyncLoaderType = [LoaderEventType | LoaderEventType[], () => Promise<{ default: ComponentType }>];
+type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
 
 const SPACE_COMMA_REGEX = /[ ,]+/;
 
@@ -34,11 +33,11 @@ class App {
     return [element, { app: this, emitter: this.emitter }];
   }
 
-  private mountSyncComponent(element: HTMLElement, component: SyncLoader): void {
+  private mountSyncComponent(element: HTMLElement, component: SyncLoaderType): void {
     component(...this.getComponentParams(element));
   }
 
-  private mountAsyncComponent(element: HTMLElement, component: AsyncLoader): void {
+  private mountAsyncComponent(element: HTMLElement, component: AsyncLoaderType): void {
     const disconnectors: CallableFunction[] = [];
     let events = component[0];
     const callback = component[1];
