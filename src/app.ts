@@ -13,16 +13,24 @@ class App {
   private readonly components: LoaderRecord;
 
   private readonly emitter: Emitter<Record<EventType, unknown>>;
+  private createdComponents: Map<HTMLElement, boolean>;
 
-  private registeredComponents: Map<HTMLElement, boolean>;
 
   constructor(components: LoaderRecord) {
     this.components = components;
+    this.createdComponents = new Map();
     this.emitter = mitt();
-    this.registeredComponents = new Map();
   }
 
   private getComponentParams(element: HTMLElement): ComponentCallbackArgs {
+  private createComponent(element: HTMLElement): void {
+    this.createdComponents.set(element, true);
+  }
+
+  private isComponentCreated(element: HTMLElement): boolean {
+    return this.createdComponents.has(element)
+  }
+
     return [element, { app: this, emitter: this.emitter }];
   }
 
@@ -79,11 +87,11 @@ class App {
         return;
       }
 
-      if (this.registeredComponents.has(element)) {
+      if (this.isComponentCreated(element)) {
         return;
       }
 
-      this.registeredComponents.set(element, true);
+      this.createComponent(element);
       const component = this.components[key];
 
       if (Array.isArray(component)) {
