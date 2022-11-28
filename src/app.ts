@@ -1,5 +1,5 @@
 import mitt, { Emitter, EventType } from 'mitt';
-import type { ComponentCallback, ComponentCallbackArgs } from './component';
+import type { ComponentArgs, ComponentType } from './component';
 
 type LoaderType = string | CallableFunction;
 type SyncLoader = ComponentCallback;
