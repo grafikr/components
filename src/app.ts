@@ -12,9 +12,9 @@ const SPACE_COMMA_REGEX = /[ ,]+/;
 class App {
   private readonly components: LoaderRecord;
 
-  private readonly emitter: Emitter<Record<EventType, unknown>>;
   private createdComponents: Map<HTMLElement, boolean>;
 
+  private readonly emitter: Emitter<Record<EventType, unknown>>;
 
   constructor(components: LoaderRecord) {
     this.components = components;
