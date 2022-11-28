@@ -2,8 +2,8 @@ import mitt, { Emitter, EventType } from 'mitt';
 import type { ComponentArgs, ComponentType } from './component';
 
 type LoaderType = string | CallableFunction;
-type SyncLoader = ComponentCallback;
-type AsyncLoader = [LoaderType | LoaderType[], () => Promise<{ default: ComponentCallback }>];
+type SyncLoader = ComponentType;
+type AsyncLoader = [LoaderType | LoaderType[], () => Promise<{ default: ComponentType }>];
 type Loader = SyncLoader | AsyncLoader;
 type LoaderRecord = Record<string, Loader>;
 
@@ -22,7 +22,6 @@ class App {
     this.emitter = mitt();
   }
 
-  private getComponentParams(element: HTMLElement): ComponentCallbackArgs {
   private createComponent(element: HTMLElement): void {
     this.createdComponents.set(element, true);
   }
@@ -31,6 +30,7 @@ class App {
     return this.createdComponents.has(element)
   }
 
+  private getComponentParams(element: HTMLElement): ComponentArgs {
     return [element, { app: this, emitter: this.emitter }];
   }
 
