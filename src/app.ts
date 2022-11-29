@@ -3,11 +3,14 @@ import type { ComponentArgs, ComponentType } from './component';
 
 type LoaderEventType = string | CallableFunction;
 type SyncLoaderType = ComponentType;
-type AsyncLoaderType = [LoaderEventType | LoaderEventType[], () => Promise<{ default: ComponentType }>];
+type AsyncLoaderType = [
+  LoaderEventType | LoaderEventType[],
+  () => Promise<{ default: ComponentType }>
+];
 type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
 
 class App {
-  private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>
+  private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>;
 
   private createdComponents: Map<HTMLElement, boolean>;
 
