@@ -1,7 +1,7 @@
 import type { Emitter, EventType } from 'mitt';
 import type App from './app';
 
-export type ComponentCallbackArgs = [
+export type ComponentArgs = [
   node: HTMLElement,
   context: {
     app: App;
@@ -9,16 +9,6 @@ export type ComponentCallbackArgs = [
   }
 ];
 
-export type ComponentLoaderArgs = (
-  node: HTMLElement,
-  load: () => Promise<void>
-) => CallableFunction;
+export type ComponentType = (...args: ComponentArgs) => void;
 
-export type ComponentCallback = (...args: ComponentCallbackArgs) => void;
-
-export default (component: ComponentCallback) =>
-  (...args: ComponentCallbackArgs) => {
-    component(...args);
-  };
-
-export const ComponentLoader = (callback: ComponentLoaderArgs) => callback;
+export type ComponentLoaderType = (node: HTMLElement, load: () => Promise<void>) => () => void;

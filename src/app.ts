@@ -1,42 +1,44 @@
 import mitt, { Emitter, EventType } from 'mitt';
-import type { ComponentCallback, ComponentCallbackArgs } from './component';
+import type { ComponentArgs, ComponentType } from './component';
 
-type LoaderType = string | CallableFunction;
-type SyncLoader = ComponentCallback;
-type AsyncLoader = [LoaderType | LoaderType[], () => Promise<{ default: ComponentCallback }>];
-type Loader = SyncLoader | AsyncLoader;
-type LoaderRecord = Record<string, Loader>;
-
-const SPACE_COMMA_REGEX = /[ ,]+/;
+type LoaderEventType = string | CallableFunction;
+type SyncLoaderType = ComponentType;
+type AsyncLoaderType = [
+  LoaderEventType | LoaderEventType[],
+  () => Promise<{ default: ComponentType }>
+];
+type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
 
 class App {
-  private readonly components: LoaderRecord;
+  private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>;
+
+  private createdComponents: Map<HTMLElement, boolean>;
 
   private readonly emitter: Emitter<Record<EventType, unknown>>;
 
-  private registeredComponents: Map<HTMLElement, boolean>;
-
   constructor(components: LoaderRecord) {
-    this.components = components;
+    this.components = new Map();
+    this.createdComponents = new Map();
     this.emitter = mitt();
-    this.registeredComponents = new Map();
+
+    this.add(components);
   }
 
-  private getComponentParams(element: HTMLElement): ComponentCallbackArgs {
+  private getComponentParams(element: HTMLElement): ComponentArgs {
     return [element, { app: this, emitter: this.emitter }];
   }
 
-  private mountSyncComponent(element: HTMLElement, component: SyncLoader): void {
+  private mountSyncComponent(element: HTMLElement, component: SyncLoaderType): void {
     component(...this.getComponentParams(element));
   }
 
-  private mountAsyncComponent(element: HTMLElement, component: AsyncLoader): void {
+  private mountAsyncComponent(element: HTMLElement, component: AsyncLoaderType): void {
     const disconnectors: CallableFunction[] = [];
     let events = component[0];
     const callback = component[1];
 
     if (!Array.isArray(events)) {
-      events = typeof events === 'string' ? events.split(SPACE_COMMA_REGEX) : [events];
+      events = typeof events === 'string' ? events.split(/[ ,]+/) : [events]; // Comma and space regex
     }
 
     const loadComponent = async () => {
@@ -66,7 +68,11 @@ class App {
   }
 
   add(components: LoaderRecord): void {
-    Object.assign(this.components, components);
+    const keys = Object.keys(components);
+
+    keys.forEach((key) => {
+      this.components.set(key, components[key]);
+    });
   }
 
   mount(): void {
@@ -75,16 +81,17 @@ class App {
     elements.forEach(async (element) => {
       const key = <string>element.dataset.component;
 
-      if (!Object.prototype.hasOwnProperty.call(this.components, key)) {
+      if (this.createdComponents.has(element)) {
         return;
       }
 
-      if (this.registeredComponents.has(element)) {
+      const component = this.components.get(key);
+
+      if (typeof component === 'undefined') {
         return;
       }
 
-      this.registeredComponents.set(element, true);
-      const component = this.components[key];
+      this.createdComponents.set(element, true);
 
       if (Array.isArray(component)) {
         this.mountAsyncComponent(element, component);
