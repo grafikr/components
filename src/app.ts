@@ -9,24 +9,18 @@ type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
 const SPACE_COMMA_REGEX = /[ ,]+/;
 
 class App {
-  private readonly components: LoaderRecord;
+  private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>
 
   private createdComponents: Map<HTMLElement, boolean>;
 
   private readonly emitter: Emitter<Record<EventType, unknown>>;
 
   constructor(components: LoaderRecord) {
-    this.components = components;
+    this.components = new Map();
     this.createdComponents = new Map();
     this.emitter = mitt();
-  }
 
-  private createComponent(element: HTMLElement): void {
-    this.createdComponents.set(element, true);
-  }
-
-  private isComponentCreated(element: HTMLElement): boolean {
-    return this.createdComponents.has(element)
+    this.add(components);
   }
 
   private getComponentParams(element: HTMLElement): ComponentArgs {
@@ -73,7 +67,11 @@ class App {
   }
 
   add(components: LoaderRecord): void {
-    Object.assign(this.components, components);
+    const keys = Object.keys(components);
+
+    keys.forEach((key) => {
+      this.components.set(key, components[key]);
+    });
   }
 
   mount(): void {
@@ -82,17 +80,17 @@ class App {
     elements.forEach(async (element) => {
       const key = <string>element.dataset.component;
 
-      // TODO: Refactor to map
-      if (!Object.prototype.hasOwnProperty.call(this.components, key)) {
+      if (this.createdComponents.has(element)) {
         return;
       }
 
-      if (this.isComponentCreated(element)) {
+      const component = this.components.get(key);
+
+      if (typeof component === 'undefined') {
         return;
       }
 
-      this.createComponent(element);
-      const component = this.components[key];
+      this.createdComponents.set(element, true);
 
       if (Array.isArray(component)) {
         this.mountAsyncComponent(element, component);
