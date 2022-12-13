@@ -51,7 +51,15 @@ class App {
 
     events.forEach((event) => {
       if (typeof event === 'function') {
-        disconnectors.push(event(element, loadComponent));
+        disconnectors.push(
+          event(
+            {
+              node: element,
+              emitter: this.emitter,
+            },
+            loadComponent
+          )
+        );
       } else {
         const options = <AddEventListenerOptions>{
           once: true,
