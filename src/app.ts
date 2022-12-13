@@ -68,9 +68,7 @@ class App {
   }
 
   add(components: LoaderRecord): void {
-    const keys = Object.keys(components);
-
-    keys.forEach((key) => {
+    Object.keys(components).forEach((key) => {
       this.components.set(key, components[key]);
     });
   }
