@@ -1,7 +1,7 @@
 import mitt, { Emitter, EventType } from 'mitt';
-import type { ComponentArgs, ComponentType } from './component';
+import type { ComponentArgs, ComponentLoaderType, ComponentType } from './component';
 
-type LoaderEventType = string | CallableFunction;
+type LoaderEventType = string | ComponentLoaderType;
 type SyncLoaderType = ComponentType;
 type AsyncLoaderType = [
   LoaderEventType | LoaderEventType[],
