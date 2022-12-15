@@ -31,7 +31,7 @@ class App {
     this.add(components);
   }
 
-  private getComponentParams(element: HTMLElement): ComponentArgs {
+  private getComponentParams(element: ComponentArgs[0]): ComponentArgs {
     return [element, { app: this, emitter: this.emitter }];
   }
 
