@@ -47,13 +47,7 @@ class App {
     element: ComponentLoaderArgs[0]['node'],
     callback: ComponentLoaderArgs[1]
   ): ComponentLoaderArgs {
-    return [
-      {
-        node: element,
-        emitter: this.emitter,
-      },
-      callback,
-    ];
+    return [{ node: element, emitter: this.emitter }, callback];
   }
 
   private mountSyncComponent(element: HTMLElement, component: SyncLoaderType): void {
