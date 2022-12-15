@@ -94,13 +94,11 @@ class App {
     const elements = document.querySelectorAll<HTMLElement>('[data-component]');
 
     elements.forEach(async (element) => {
-      const key = <string>element.dataset.component;
-
       if (this.createdComponents.has(element)) {
         return;
       }
 
-      const component = this.components.get(key);
+      const component = this.components.get(<string>element.dataset.component);
 
       if (typeof component === 'undefined') {
         return;
