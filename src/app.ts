@@ -14,7 +14,7 @@ class App {
 
   private createdComponents: Map<HTMLElement, boolean>;
 
-  private readonly emitter: Emitter<Record<EventType, unknown>>;
+  readonly emitter: Emitter<Record<EventType, unknown>>;
 
   constructor(components: LoaderRecord) {
     this.components = new Map();
