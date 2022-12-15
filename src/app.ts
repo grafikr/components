@@ -24,6 +24,9 @@ class App {
   private readonly eventListenerOptions: AddEventListenerOptions;
 
   constructor(components: LoaderRecord) {
+    this.add = this.add.bind(this);
+    this.mount = this.mount.bind(this);
+
     this.components = new Map();
     this.createdComponents = new Map();
     this.emitter = mitt();
