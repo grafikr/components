@@ -8,12 +8,14 @@ export type ComponentArgs = [
   }
 ];
 
-export type ComponentType = (...args: ComponentArgs) => void;
-
-export type ComponentLoaderType = (
+export type ComponentLoaderArgs = [
   context: {
     node: HTMLElement;
     emitter: App['emitter'];
   },
   load: () => Promise<void>
-) => () => void;
+];
+
+export type ComponentType = (...args: ComponentArgs) => void;
+
+export type ComponentLoaderType = (...args: ComponentLoaderArgs) => () => void;

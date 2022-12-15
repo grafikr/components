@@ -1,5 +1,10 @@
 import mitt, { Emitter, EventType } from 'mitt';
-import type { ComponentArgs, ComponentLoaderType, ComponentType } from './component';
+import type {
+  ComponentArgs,
+  ComponentLoaderArgs,
+  ComponentLoaderType,
+  ComponentType,
+} from './component';
 
 type LoaderEventType = string | ComponentLoaderType;
 type SyncLoaderType = ComponentType;
@@ -35,6 +40,19 @@ class App {
     return [element, { app: this, emitter: this.emitter }];
   }
 
+  private getLoaderParams(
+    element: ComponentLoaderArgs[0]['node'],
+    callback: ComponentLoaderArgs[1]
+  ): ComponentLoaderArgs {
+    return [
+      {
+        node: element,
+        emitter: this.emitter,
+      },
+      callback,
+    ];
+  }
+
   private mountSyncComponent(element: HTMLElement, component: SyncLoaderType): void {
     component(...this.getComponentParams(element));
   }
@@ -58,15 +76,7 @@ class App {
 
     events.forEach((event) => {
       if (typeof event === 'function') {
-        disconnectors.push(
-          event(
-            {
-              node: element,
-              emitter: this.emitter,
-            },
-            loadComponent
-          )
-        );
+        disconnectors.push(event(...this.getLoaderParams(element, loadComponent)));
       } else {
         element.addEventListener(event, loadComponent, this.eventListenerOptions);
 
