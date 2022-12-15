@@ -16,10 +16,17 @@ class App {
 
   readonly emitter: Emitter<Record<EventType, unknown>>;
 
+  private readonly eventListenerOptions: AddEventListenerOptions;
+
   constructor(components: LoaderRecord) {
     this.components = new Map();
     this.createdComponents = new Map();
     this.emitter = mitt();
+
+    this.eventListenerOptions = {
+      once: true,
+      passive: true,
+    };
 
     this.add(components);
   }
@@ -61,15 +68,10 @@ class App {
           )
         );
       } else {
-        const options = <AddEventListenerOptions>{
-          once: true,
-          passive: true,
-        };
-
-        element.addEventListener(event, loadComponent, options);
+        element.addEventListener(event, loadComponent, this.eventListenerOptions);
 
         disconnectors.push(() => {
-          element.removeEventListener(event, loadComponent, options);
+          element.removeEventListener(event, loadComponent, this.eventListenerOptions);
         });
       }
     });
