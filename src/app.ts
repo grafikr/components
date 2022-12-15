@@ -38,7 +38,7 @@ class App {
     const callback = component[1];
 
     if (!Array.isArray(events)) {
-      events = typeof events === 'string' ? events.split(/[ ,]+/) : [events]; // Comma and space regex
+      events = typeof events === 'string' ? events.split(' ') : [events];
     }
 
     const loadComponent = async () => {
