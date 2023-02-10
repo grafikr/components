@@ -23,7 +23,7 @@ class App {
 
   private readonly eventListenerOptions: AddEventListenerOptions;
 
-  constructor(components: LoaderRecord) {
+  constructor(components: LoaderRecord, stateManager?: (emitter: App['emitter']) => void) {
     this.add = this.add.bind(this);
     this.mount = this.mount.bind(this);
 
@@ -37,6 +37,10 @@ class App {
     };
 
     this.add(components);
+
+    if (stateManager) {
+      stateManager(this.emitter);
+    }
   }
 
   private getComponentParams(element: ComponentArgs[0]): ComponentArgs {
