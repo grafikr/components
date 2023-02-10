@@ -14,12 +14,12 @@ type AsyncLoaderType = [
 ];
 type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
 
-class App {
+class App<EmitterEvents extends Record<EventType, unknown>> {
   private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>;
 
   private createdComponents: Map<HTMLElement, boolean>;
 
-  readonly emitter: Emitter<Record<EventType, unknown>>;
+  readonly emitter: Emitter<EmitterEvents>;
 
   private readonly eventListenerOptions: AddEventListenerOptions;
 
@@ -29,7 +29,7 @@ class App {
 
     this.components = new Map();
     this.createdComponents = new Map();
-    this.emitter = mitt();
+    this.emitter = mitt<EmitterEvents>();
 
     this.eventListenerOptions = {
       once: true,
