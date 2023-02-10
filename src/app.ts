@@ -6,30 +6,32 @@ import type {
   ComponentType,
 } from './component';
 
-type LoaderEventType = string | ComponentLoaderType;
-type SyncLoaderType = ComponentType;
-type AsyncLoaderType = [
-  LoaderEventType | LoaderEventType[],
-  () => Promise<{ default: ComponentType }>
-];
-type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
+module App {
+  export type LoaderEventType = string | ComponentLoaderType;
+  export type SyncLoaderType = ComponentType;
+  export type AsyncLoaderType = [
+      LoaderEventType | LoaderEventType[],
+    () => Promise<{ default: ComponentType }>
+  ];
+  export type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
+}
 
-class App<EmitterEvents extends Record<EventType, unknown>> {
-  private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>;
+class App<Events extends Record<EventType, unknown> =Record<EventType, unknown>> {
+  private readonly components: Map<string, App.SyncLoaderType | App.AsyncLoaderType>;
 
   private createdComponents: Map<HTMLElement, boolean>;
 
-  readonly emitter: Emitter<EmitterEvents>;
+  readonly emitter: Emitter<Events>;
 
   private readonly eventListenerOptions: AddEventListenerOptions;
 
-  constructor(components: LoaderRecord) {
+  constructor(components: App.LoaderRecord) {
     this.add = this.add.bind(this);
     this.mount = this.mount.bind(this);
 
     this.components = new Map();
     this.createdComponents = new Map();
-    this.emitter = mitt<EmitterEvents>();
+    this.emitter = mitt<Events>();
 
     this.eventListenerOptions = {
       once: true,
@@ -50,11 +52,11 @@ class App<EmitterEvents extends Record<EventType, unknown>> {
     return [{ node: element, emitter: this.emitter }, callback];
   }
 
-  private mountSyncComponent(element: HTMLElement, component: SyncLoaderType): void {
+  private mountSyncComponent(element: HTMLElement, component: App.SyncLoaderType): void {
     component(...this.getComponentParams(element));
   }
 
-  private mountAsyncComponent(element: HTMLElement, component: AsyncLoaderType): void {
+  private mountAsyncComponent(element: HTMLElement, component: App.AsyncLoaderType): void {
     const disconnectors: CallableFunction[] = [];
     let events = component[0];
     const callback = component[1];
@@ -84,7 +86,7 @@ class App<EmitterEvents extends Record<EventType, unknown>> {
     });
   }
 
-  add(components: LoaderRecord): void {
+  add(components: App.LoaderRecord): void {
     Object.keys(components).forEach((key) => {
       this.components.set(key, components[key]);
     });
