@@ -23,7 +23,7 @@ class App {
 
   private readonly eventListenerOptions: AddEventListenerOptions;
 
-  constructor(components: LoaderRecord) {
+  constructor(components?: LoaderRecord) {
     this.add = this.add.bind(this);
     this.mount = this.mount.bind(this);
 
@@ -84,7 +84,7 @@ class App {
     });
   }
 
-  add(components: LoaderRecord): void {
+  add(components: LoaderRecord = {}): void {
     Object.keys(components).forEach((key) => {
       this.components.set(key, components[key]);
     });
