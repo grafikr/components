@@ -5,7 +5,7 @@ export type ComponentArgs = [
   context: {
     app: App;
     emitter: App['emitter'];
-  }
+  },
 ];
 
 export type ComponentLoaderArgs = [
@@ -13,7 +13,7 @@ export type ComponentLoaderArgs = [
     node: HTMLElement;
     emitter: App['emitter'];
   },
-  load: () => Promise<void>
+  load: () => Promise<void>,
 ];
 
 export type ComponentType = (...args: ComponentArgs) => void;

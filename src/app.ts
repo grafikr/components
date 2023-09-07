@@ -10,7 +10,7 @@ type LoaderEventType = string | ComponentLoaderType;
 type SyncLoaderType = ComponentType;
 type AsyncLoaderType = [
   LoaderEventType | LoaderEventType[],
-  () => Promise<{ default: ComponentType }>
+  () => Promise<{ default: ComponentType }>,
 ];
 type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
 
@@ -45,7 +45,7 @@ class App {
 
   private getLoaderParams(
     element: ComponentLoaderArgs[0]['node'],
-    callback: ComponentLoaderArgs[1]
+    callback: ComponentLoaderArgs[1],
   ): ComponentLoaderArgs {
     return [{ node: element, emitter: this.emitter }, callback];
   }
