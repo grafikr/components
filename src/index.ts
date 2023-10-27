@@ -1,4 +1,5 @@
 import App from './app';
-import { ComponentType, ComponentLoaderType } from './component';
+import Component from './component';
+import Loader from './loader';
 
-export { App, ComponentType, ComponentLoaderType };
+export { App, Component, Loader };

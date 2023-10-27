@@ -1,116 +1,108 @@
-import mitt, { Emitter, EventType } from 'mitt';
-import type {
-  ComponentArgs,
-  ComponentLoaderArgs,
-  ComponentLoaderType,
-  ComponentType,
-} from './component';
-
-type LoaderEventType = string | ComponentLoaderType;
-type SyncLoaderType = ComponentType;
-type AsyncLoaderType = [
-  LoaderEventType | LoaderEventType[],
-  () => Promise<{ default: ComponentType }>,
-];
-type LoaderRecord = Record<string, SyncLoaderType | AsyncLoaderType>;
+import type { Context } from './context';
+import type { ComponentState } from './component';
+import type { Hook } from './hook';
+import type { LoaderArguments, LoaderCallback, LoaderList } from './loader';
 
 class App {
-  private readonly components: Map<string, SyncLoaderType | AsyncLoaderType>;
+  private readonly loaders: Map<string, LoaderArguments>;
 
-  private createdComponents: Map<HTMLElement, boolean>;
+  private readonly components: Map<HTMLElement, ComponentState>;
 
-  readonly emitter: Emitter<Record<EventType, unknown>>;
-
-  private readonly eventListenerOptions: AddEventListenerOptions;
-
-  constructor(components?: LoaderRecord) {
-    this.add = this.add.bind(this);
-    this.mount = this.mount.bind(this);
-
+  constructor(components: LoaderList = {}) {
+    this.loaders = new Map();
     this.components = new Map();
-    this.createdComponents = new Map();
-    this.emitter = mitt();
-
-    this.eventListenerOptions = {
-      once: true,
-      passive: true,
-    };
 
     this.add(components);
   }
 
-  private getComponentParams(element: ComponentArgs[0]): ComponentArgs {
-    return [element, { app: this, emitter: this.emitter }];
-  }
+  private static createHook(): Hook {
+    const list = new Array<() => void>();
 
-  private getLoaderParams(
-    element: ComponentLoaderArgs[0]['node'],
-    callback: ComponentLoaderArgs[1],
-  ): ComponentLoaderArgs {
-    return [{ node: element, emitter: this.emitter }, callback];
-  }
-
-  private mountSyncComponent(element: HTMLElement, component: SyncLoaderType): void {
-    component(...this.getComponentParams(element));
-  }
-
-  private mountAsyncComponent(element: HTMLElement, component: AsyncLoaderType): void {
-    const disconnectors: CallableFunction[] = [];
-    let events = component[0];
-    const callback = component[1];
-
-    if (!Array.isArray(events)) {
-      events = typeof events === 'string' ? events.split(' ') : [events];
-    }
-
-    const loadComponent = async () => {
-      disconnectors.forEach((disconnect) => {
-        disconnect();
-      });
-
-      (await callback()).default(...this.getComponentParams(element));
+    return {
+      list,
+      addListener(fn) {
+        list.push(fn);
+      },
+      run() {
+        list.forEach((fn) => fn());
+      },
     };
+  }
 
-    events.forEach((event) => {
-      if (typeof event === 'function') {
-        disconnectors.push(event(...this.getLoaderParams(element, loadComponent)));
-      } else {
-        element.addEventListener(event, loadComponent, this.eventListenerOptions);
+  private getContext({ mounted, triggered }: { mounted: Hook; triggered: Hook }): Context {
+    return {
+      app: this,
+      onMounted: mounted.addListener,
+      onTriggered: triggered.addListener,
+    };
+  }
 
-        disconnectors.push(() => {
-          element.removeEventListener(event, loadComponent, this.eventListenerOptions);
-        });
+  private createComponent(element: HTMLElement, args: LoaderArguments): void {
+    const mounted = App.createHook();
+    const triggered = App.createHook();
+    const context = this.getContext({ mounted, triggered });
+
+    this.components.set(element, 'created');
+
+    if (Array.isArray(args)) {
+      const events = Array.isArray(args[0]) ? args[0] : [args[0]];
+      const component = args[1];
+
+      const mountComponent = async () => {
+        if (this.components.get(element) === 'created') {
+          (await component()).default(element, context);
+
+          this.components.set(element, 'mounted');
+          mounted.run();
+        }
+
+        triggered.run();
+      };
+
+      const executeCustomLoader = (event: LoaderCallback | string) => {
+        if (typeof event === 'function') {
+          event({ node: element, ...context }, mountComponent);
+        } else {
+          element.addEventListener(event, mountComponent);
+        }
+      };
+
+      events.forEach(executeCustomLoader);
+    } else {
+      args(element, context);
+      this.components.set(element, 'mounted');
+
+      mounted.run();
+      triggered.run();
+    }
+  }
+
+  add(components: LoaderList = {}): void {
+    Object.keys(components).forEach((key) => {
+      const component = components[key];
+
+      if (component) {
+        this.loaders.set(key, component);
       }
     });
   }
 
-  add(components: LoaderRecord = {}): void {
-    Object.keys(components).forEach((key) => {
-      this.components.set(key, components[key]);
-    });
-  }
-
-  mount(): void {
-    const elements = document.querySelectorAll<HTMLElement>('[data-component]');
+  mount(root: HTMLElement | Document = document): void {
+    const elements = root.querySelectorAll<HTMLElement>('[data-component]');
 
     elements.forEach(async (element) => {
-      if (this.createdComponents.has(element)) {
+      // Check if component is already mounted
+      if (this.components.has(element)) {
         return;
       }
 
-      const component = this.components.get(<string>element.dataset.component);
-
-      if (typeof component === 'undefined') {
+      // Check if loader exists
+      const loader = this.loaders.get(<string>element.dataset.component);
+      if (!loader) {
         return;
       }
 
-      this.createdComponents.set(element, true);
-
-      if (Array.isArray(component)) {
-        this.mountAsyncComponent(element, component);
-      } else {
-        this.mountSyncComponent(element, component);
-      }
+      this.createComponent(element, loader);
     });
   }
 }

@@ -1,21 +1,11 @@
-import type App from './app';
+import type { Context } from './context';
 
-export type ComponentArgs = [
-  node: HTMLElement,
-  context: {
-    app: App;
-    emitter: App['emitter'];
-  },
-];
+export type ComponentCallback = (node: HTMLElement, context: Context) => void;
 
-export type ComponentLoaderArgs = [
-  context: {
-    node: HTMLElement;
-    emitter: App['emitter'];
-  },
-  load: () => Promise<void>,
-];
+export type ComponentState = 'created' | 'mounted';
 
-export type ComponentType = (...args: ComponentArgs) => void;
+function Component(fn: ComponentCallback) {
+  return fn;
+}
 
-export type ComponentLoaderType = (...args: ComponentLoaderArgs) => () => void;
+export default Component;
