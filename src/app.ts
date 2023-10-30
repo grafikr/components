@@ -1,18 +1,44 @@
 import type { Context } from './context';
 import type { ComponentState } from './component';
-import type { Hook } from './hook';
 import type { LoaderArguments, LoaderCallback, LoaderList } from './loader';
+import type { EventStore, EventStoreEvent } from './event-store';
+import type { Hook } from './hook';
 
 class App {
   private readonly loaders: Map<string, LoaderArguments>;
 
   private readonly components: Map<HTMLElement, ComponentState>;
 
+  private readonly eventStore: EventStore;
+
   constructor(components: LoaderList = {}) {
     this.loaders = new Map();
     this.components = new Map();
+    this.eventStore = App.createEventStore();
 
     this.add(components);
+  }
+
+  private static createEventStore(): EventStore {
+    const list = new Array<EventStoreEvent>();
+
+    return {
+      list,
+      dispatch: (type, payload) => {
+        list.push([type, payload]);
+
+        document.dispatchEvent(new CustomEvent(type, { detail: payload }));
+      },
+      history: (fn: (events: Array<[string, any]>) => void, filter?: string | string[]) => {
+        const events = filter
+          ? list.filter(([event]) =>
+              Array.isArray(filter) ? filter.includes(event) : filter === event,
+            )
+          : list;
+
+        fn(events);
+      },
+    };
   }
 
   private static createHook(): Hook {
@@ -32,8 +58,10 @@ class App {
   private getContext({ mounted, triggered }: { mounted: Hook; triggered: Hook }): Context {
     return {
       app: this,
-      onMounted: mounted.addListener,
+      dispatchEvent: this.eventStore.dispatch,
+      useEventHistory: this.eventStore.history,
       onTriggered: triggered.addListener,
+      onMounted: mounted.addListener,
     };
   }
 
