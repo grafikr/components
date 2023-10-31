@@ -1,7 +1,7 @@
 import type { Context } from './context';
 import type { ComponentState } from './component';
 import type { LoaderArguments, LoaderCallback, LoaderList } from './loader';
-import type { EventStore, EventStoreEvent } from './event-store';
+import type { EventStore, Events } from './event-store';
 import type { Hook } from './hook';
 
 class App {
@@ -20,16 +20,16 @@ class App {
   }
 
   private static createEventStore(): EventStore {
-    const list = new Array<EventStoreEvent>();
+    const list = new Array<Events>();
 
     return {
       list,
       dispatch: (type, payload) => {
-        list.push([type, payload]);
+        list.push([type.toString(), payload]);
 
-        document.dispatchEvent(new CustomEvent(type, { detail: payload }));
+        document.dispatchEvent(new CustomEvent(type.toString(), { detail: payload }));
       },
-      history: (fn: (events: Array<[string, any]>) => void, filter?: string | string[]) => {
+      history: (fn, filter) => {
         const events = filter
           ? list.filter(([event]) =>
               Array.isArray(filter) ? filter.includes(event) : filter === event,

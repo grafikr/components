@@ -1,7 +1,13 @@
-export type EventStoreEvent = [string, any];
+export type Events = [
+  string,
+  any
+];
 
-export type EventStore = {
-  list: Array<EventStoreEvent>;
-  dispatch: <K extends string, P = any>(type: K, payload: P) => void;
-  history: (fn: (events: Array<EventStoreEvent>) => void, filter?: string | string[]) => void;
-};
+export interface EventStore {
+  list: Array<Events>;
+  dispatch(type: string, payload: any): void;
+  history(
+    fn: (events: Array<Events>) => void,
+    filter?: string | string[],
+  ): void;
+}
