@@ -165,3 +165,26 @@ Component((node, { onTriggered }) => {
   })
 });
 ```
+
+### Typed events for `dispatchEvent` and `useEventHistory`
+
+To add types for `dispatchEvent` and `useEventHistory`, you can add a `.d.ts` file with the following code:
+
+```typescript
+type CustomEventMap = {
+  'typed-event': any;
+};
+
+type AppEvent = Array<
+  { [K in keyof CustomEventMap]: [K, CustomEventMap[K]] }[keyof CustomEventMap]
+>;
+
+declare module '@grafikr/components' {
+  export interface EventStore {
+    dispatch<K extends keyof CustomEventMap>(type: K, payload: CustomEventMap[K]): void;
+    history(fn: (events: AppEvent) => void, filter?: string | string[]): void;
+  }
+}
+
+export {};
+```
