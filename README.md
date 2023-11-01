@@ -17,10 +17,9 @@ First you have to create a new component.
 ```typescript
 import type { ComponentType } from '@grafikr/components';
 
-const Component: ComponentType = (node, { app, emitter }) => {
+const Component: ComponentType = (node, { app }) => {
   console.log(node); // The DOM element
   console.log(app); // The app instance
-  console.log(emitter); // Event emitter
 };
 
 export default Component;
@@ -32,11 +31,11 @@ Then you have to register your component.
 import { App } from '@grafikr/components';
 
 const app = new App({
-  // Async (Recommended), loaded on element mouseenter event
-  'my-component': ['mouseenter', () => import('components/my-component')],
+  // Async component (Recommended)
+  'async-component': ['mouseenter', () => import('components/async-component')],
 
-  // Sync, loaded immediately
-  'my-component': require('components/my-component'),
+  // Synced component
+  'sync-component': require('components/sync-component'),
 });
 
 app.mount();
@@ -48,16 +47,20 @@ Then you have to create the DOM elements.
 <div data-component="my-component"></div>
 ```
 
+### Loaders
+
 #### Creating custom loader
 
 Sometimes default pointer events is not good enough to load your component. You may want to load it when it's visible the viewport, or when a certain event is emitted.
 
-To create a custom loader you will first have to create the loader.
+To create a custom loader you will first have to create the loader. 
+
+The first argument passed is of type `{ node: HTMLElement } & Context`. The second argument is an async function which mounts the component.
 
 ```typescript
-import type { ComponentLoaderType } from '@grafikr/components';
+import { Loader } from '@grafikr/components';
 
-const Loader: ComponentLoaderType = ({ node, emitter }, load) => {
+export default Loader(({ node }, load) => {
   // Add a event.
   // You can use `node` and `emitter` here.
   document.addEventListener('my-custom-event', load);
@@ -67,35 +70,98 @@ const Loader: ComponentLoaderType = ({ node, emitter }, load) => {
   return () => {
     document.removeEventListener('my-custom-event', load);
   };
-};
-
-export default Loader;
+});
 ```
 
 Then you have to register the loader for the component.
 
 ```typescript
-import myCustomLoader from 'loaders/my-custom-loader',
+import CustomLoader from 'loaders/my-custom-loader';
 
 const app = new App({
-  'my-component': [
-    myCustomLoader,
-    () => import('components/my-component'),
+  'component': [
+    CustomLoader,
+    () => import('components/component'),
   ],
 });
+
+app.mount();
 ```
 
 #### Using multiple loaders
 
-It's very easy to add multiple loaders. If you just use regular events emitted from the node itself, you can pass a string with these, or if you want to combine multiple custom loaders with regular events, you can use an array.
+It's very easy to add multiple loaders. You can combine multiple loaders by passing an array.
 
 ```typescript
 const app = new App({
-  'my-component': ['mouseenter click', () => import('components/my-component')],
-
-  'my-component': [
-    [myCustomLoader, myOtherCustomLoader, 'mouseenter'],
-    () => import('components/my-component'),
+  'component': [
+    ['mouseenter', 'click'],
+    () => import('components/component')
   ],
+
+  'other-component': [
+    [customLoader, anotherCustomLoader, 'mouseenter'],
+    () => import('components/other-component'),
+  ],
+});
+
+app.mount();
+```
+
+### Context object
+
+#### `app`
+The app instance.
+
+```typescript
+Component((node, { app }) => {
+  ...
+});
+```
+
+#### `dispatchEvent`
+A wrapper around `document.dispatchEvent`. Is used to store past events received in `useEventHistory`.
+
+```typescript
+Component((node, { dispatchEvent }) => {
+  dispatchEvent('event-name', any)
+});
+```
+
+### `useEventHistory`
+A function which takes in a function which gets called with all past events, up until the component is mounted.
+
+```typescript
+Component((node, { useEventHistory }) => {
+  useEventHistory((events) => {
+    events.forEach(([event, payload]) => {
+      // event? Name of the event
+      // payload? The payload sent to the event
+      
+      ...  
+    });
+  })
+});
+```
+
+#### `onMounted`
+A function which takes in a function which get called when the component is initially mounted.
+
+```typescript
+Component((node, { onMounted }) => {
+  onMounted(() => {
+    ...
+  })
+});
+```
+
+#### `onTriggered`
+A function which takes in a function which get called every time is triggered by a loader.
+
+```typescript
+Component((node, { onTriggered }) => {
+  onTriggered(() => {
+    ...
+  })
 });
 ```
