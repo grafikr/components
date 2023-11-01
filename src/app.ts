@@ -1,4 +1,4 @@
-import type { Context } from './context';
+import type { AppContext, Context } from './context';
 import type { ComponentState } from './component';
 import type { LoaderArguments, LoaderCallback, LoaderList } from './loader';
 import type { EventStore, Events } from './event-store';
@@ -11,10 +11,17 @@ class App {
 
   private readonly eventStore: EventStore;
 
+  readonly context: AppContext;
+
   constructor(components: LoaderList = {}) {
     this.loaders = new Map();
     this.components = new Map();
     this.eventStore = App.createEventStore();
+    this.context = {
+      app: this,
+      dispatchEvent: this.eventStore.dispatch,
+      useEventHistory: this.eventStore.history,
+    };
 
     this.add(components);
   }
@@ -55,11 +62,9 @@ class App {
     };
   }
 
-  private getContext({ mounted, triggered }: { mounted: Hook; triggered: Hook }): Context {
+  private getComponentContext({ mounted, triggered }: { mounted: Hook; triggered: Hook }): Context {
     return {
-      app: this,
-      dispatchEvent: this.eventStore.dispatch,
-      useEventHistory: this.eventStore.history,
+      ...this.context,
       onTriggered: triggered.addListener,
       onMounted: mounted.addListener,
     };
@@ -68,7 +73,7 @@ class App {
   private createComponent(element: HTMLElement, args: LoaderArguments): void {
     const mounted = App.createHook();
     const triggered = App.createHook();
-    const context = this.getContext({ mounted, triggered });
+    const context = this.getComponentContext({ mounted, triggered });
 
     this.components.set(element, 'created');
 

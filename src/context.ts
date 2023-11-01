@@ -8,3 +8,5 @@ export type Context = {
   onMounted: (fn: () => void) => void;
   onTriggered: (fn: () => void) => void;
 };
+
+export type AppContext = Pick<Context, 'app' | 'dispatchEvent' | 'useEventHistory'>;
