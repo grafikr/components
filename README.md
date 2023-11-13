@@ -15,14 +15,12 @@ $ yarn add @grafikr/components
 First you have to create a new component.
 
 ```typescript
-import type { ComponentType } from '@grafikr/components';
+import { Component } from '@grafikr/components';
 
-const Component: ComponentType = (node, { app }) => {
+export default Component((node, { app }) => {
   console.log(node); // The DOM element
   console.log(app); // The app instance
-};
-
-export default Component;
+});
 ```
 
 Then you have to register your component.
