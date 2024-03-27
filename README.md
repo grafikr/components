@@ -51,7 +51,7 @@ Then you have to create the DOM elements.
 
 Sometimes default pointer events is not good enough to load your component. You may want to load it when it's visible the viewport, or when a certain event is emitted.
 
-To create a custom loader you will first have to create the loader. 
+To create a custom loader you will first have to create the loader.
 
 The first argument passed is of type `{ node: HTMLElement } & Context`. The second argument is an async function which mounts the component.
 
@@ -77,10 +77,7 @@ Then you have to register the loader for the component.
 import CustomLoader from 'loaders/my-custom-loader';
 
 const app = new App({
-  'component': [
-    CustomLoader,
-    () => import('components/component'),
-  ],
+  component: [CustomLoader, () => import('components/component')],
 });
 
 app.mount();
@@ -92,10 +89,7 @@ It's very easy to add multiple loaders. You can combine multiple loaders by pass
 
 ```typescript
 const app = new App({
-  'component': [
-    ['mouseenter', 'click'],
-    () => import('components/component')
-  ],
+  component: [['mouseenter', 'click'], () => import('components/component')],
 
   'other-component': [
     [customLoader, anotherCustomLoader, 'mouseenter'],
@@ -109,6 +103,7 @@ app.mount();
 ### Context object
 
 #### `app`
+
 The app instance.
 
 ```typescript
@@ -118,15 +113,17 @@ Component((node, { app }) => {
 ```
 
 #### `dispatchEvent`
+
 A wrapper around `document.dispatchEvent`. Is used to store past events received in `useEventHistory`.
 
 ```typescript
 Component((node, { dispatchEvent }) => {
-  dispatchEvent('event-name', any)
+  dispatchEvent('event-name', any);
 });
 ```
 
 ### `useEventHistory`
+
 A function which takes in a function which gets called with all past events, up until the component is mounted.
 
 ```typescript
@@ -135,14 +132,15 @@ Component((node, { useEventHistory }) => {
     events.forEach(([event, payload]) => {
       // event? Name of the event
       // payload? The payload sent to the event
-      
-      ...  
+
+      ...
     });
   })
 });
 ```
 
 #### `onMounted`
+
 A function which takes in a function which get called when the component is initially mounted.
 
 ```typescript
@@ -154,6 +152,7 @@ Component((node, { onMounted }) => {
 ```
 
 #### `onTriggered`
+
 A function which takes in a function which get called every time is triggered by a loader.
 
 ```typescript
