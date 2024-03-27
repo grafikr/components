@@ -62,18 +62,34 @@ class App {
     };
   }
 
-  private getComponentContext({ mounted, triggered }: { mounted: Hook; triggered: Hook }): Context {
+  private static scopeSelector(selectors: string): string {
+    return `${selectors}:not([data-component] ${selectors})`;
+  }
+
+  private getComponentContext({
+    element,
+    mounted,
+    triggered,
+  }: {
+    element: HTMLElement;
+    mounted: Hook;
+    triggered: Hook;
+  }): Context {
     return {
       ...this.context,
       onTriggered: triggered.addListener,
       onMounted: mounted.addListener,
+      scopedQuerySelector: (selectors: string) =>
+        element.querySelector(App.scopeSelector(selectors)),
+      scopedQuerySelectorAll: (selectors: string) =>
+        document.querySelectorAll(App.scopeSelector(selectors)),
     };
   }
 
   private createComponent(element: HTMLElement, args: LoaderArguments): void {
     const mounted = App.createHook();
     const triggered = App.createHook();
-    const context = this.getComponentContext({ mounted, triggered });
+    const context = this.getComponentContext({ element, mounted, triggered });
 
     this.components.set(element, 'created');
 
