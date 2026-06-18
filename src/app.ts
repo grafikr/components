@@ -1,8 +1,8 @@
-import type { AppContext, Context } from './context';
 import type { ComponentState } from './component';
-import type { LoaderArguments, LoaderCallback, LoaderList } from './loader';
+import type { AppContext, Context } from './context';
 import type { EventStore, Events } from './event-store';
 import type { Hook } from './hook';
+import type { LoaderArguments, LoaderCallback, LoaderList } from './loader';
 
 class App {
   private readonly loaders: Map<string, LoaderArguments>;
@@ -27,7 +27,7 @@ class App {
   }
 
   private static createEventStore(): EventStore {
-    const list = new Array<Events>();
+    const list: Events[] = [];
 
     return {
       list,
@@ -49,7 +49,7 @@ class App {
   }
 
   private static createHook(): Hook {
-    const list = new Array<() => void>();
+    const list: (() => void)[] = [];
 
     return {
       list,
@@ -57,7 +57,9 @@ class App {
         list.push(fn);
       },
       run() {
-        list.forEach((fn) => fn());
+        list.forEach((fn) => {
+          fn();
+        });
       },
     };
   }

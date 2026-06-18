@@ -1,6 +1,6 @@
-import type { ArrayMaybe } from './helpers';
 import type { ComponentCallback } from './component';
 import type { Context } from './context';
+import type { ArrayMaybe } from './helpers';
 
 export type LoaderCallback = (
   context: { node: HTMLElement } & Context,
