@@ -1,6 +1,6 @@
 import App from './app';
 import Component from './component';
-import Loader from './loader';
 import { EventStore } from './event-store';
+import Loader from './loader';
 
-export { App, Component, Loader, EventStore };
+export { App, Component, EventStore, Loader };
