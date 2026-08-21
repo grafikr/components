@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
+    "dev": "tsc --watch",
     "format": "biome format --write",
     "lint": "biome lint",
     "check": "biome check --write"
